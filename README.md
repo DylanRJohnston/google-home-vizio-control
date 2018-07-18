@@ -56,3 +56,12 @@ CEC is a bit of a weird beast and works differently between consoles.
 
 Turning on the device when the TV changes to that input only works when the input actually *changes*. IF the TV is already on the playstation input channel then it will not wake up. For this reason, we need to switch to a different input e.g. `CAST`, and then change back in order to trigger the CEC command.
 
+## Security Considerations
+For IFTTT to be able to call the webhook the server must be exposed to the internet. A few things to think about.
+
+* To protect the application shared secret please put the server behind a SSL proxy such as [nginx](https://blog.thibmaekelbergh.be/post/super-simple-ssl-proxy-for-raspberry-pi/). You can get a free SSL cert from [Let's Encrypt](https://letsencrypt.org/).
+* I've used a constant time comparator for checking the secret, but there could be more advanced timing attack opportunities.
+* Please run the server in a restricted user group without write access or read access outside of the application directory
+* To protect against DDoS consider placing the API behind [Cloudflare](https://www.cloudflare.com/) or some similar service.
+
+But on the other hand, this is all probably over kill since who's going to attack your TV? ¯\_(ツ)_/¯
