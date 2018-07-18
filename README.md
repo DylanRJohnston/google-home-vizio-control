@@ -38,9 +38,9 @@ SHARED_SECRET
 ### Vizio Smartcast API
 Vizio TVs have a REST-ish API that is used by the SmartCast app to control the tv. The API is documented [here](https://github.com/exiva/Vizio_SmartCast_API). It can emulate all the button presses of the remote, but has a number of quirks detailed below.
 
-* Change device input requires the key of the current input to work, therefore it is a stateful operation
-* Change device input returns before the inout has actually changed so calls to current input may be incorrect
-* When turning on the tv change device input may return sucesfull while not doing anything
+* Change device input requires the key of the current input to work, therefore it is a statefull operation
+* Change device input returns before the input has actually changed so calls to current input may be incorrect
+* When turning on the tv change device input may return successful while not doing anything
 
 For these reasons the change input function loops every second requested the input be changed until the current input return matches the desired input.
 
