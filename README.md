@@ -1,6 +1,6 @@
 # google-home-vizio-control
 
-A simple server for integrating Google Home voice control with the Vizio TV SmartCast API.
+A simple server for integrating Google Home voice control with the Vizio TV SmartCast API. [Demo Here](https://www.youtube.com/watch?v=Gl37UplXswY)
 
 ## Overview
 
