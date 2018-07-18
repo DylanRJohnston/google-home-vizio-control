@@ -70,4 +70,10 @@ post '/switch', ->*
   yield triggerCEC process.env.SWITCH_INPUT
   it.status 200 .send ""
 
+post '/cast', ->*
+  console.log "Turning on chromecast"
+  yield powerOn!
+  yield changeInput 'CAST'
+  it.status 200 .send ""
+
 app.listen 3000
