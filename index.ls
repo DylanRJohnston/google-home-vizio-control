@@ -2,7 +2,7 @@ require! {
   'vizio-smart-cast': SmartCast
   'body-parser': bodyParser
   crypto: { timingSafeEqual }
-  util: { inspect }
+  util: { inspect: _inpsect }
   express
   co
   dotenv
@@ -38,12 +38,15 @@ post = (url, f) ->
 
 
 getCurrentInputName = -> tv.input.current!.then (.ITEMS[0].VALUE)
-turnTheTvOn = -> tv.control.power.on!
+turnTheTVOn = -> tv.control.power.on!
+turnTheTVOff = -> tv.control.power.off!
 isTheTVOff = -> tv.power.currentMode!.then (.ITEMS[0].VALUE == 0)
 
-
 powerOn = co.wrap ->*
-  yield turnTheTvOn! if yield isTheTVOff!
+  yield turnTheTVOn! if yield isTheTVOff!
+
+powerOff = co.wrap ->*
+  yield turnTheTVOff! unless yield isTheTVOff!
 
 changeInput = co.wrap (name) ->*
   console.log "Changing input to: #{name}"
@@ -70,12 +73,16 @@ inputs =
   * name: 'chromecast'
     input: 'cast' 
 
-handler = ({ name, input }) -> (res) ->*
-  console.log "Turning on the #{name}"
+inputs.map ({ name, input }) ->
+  post "/#{name}", (res) ->*
+    console.log "Turning on the #{name}"
 
-  yield powerOn!
-  yield triggerCEC input
+    yield powerOn!
+    yield triggerCEC input
+    res.status 200 .send ""
+
+post "/off", (res) ->*
+  yield powerOff!
   res.status 200 .send ""
 
-inputs.map -> post "/#{it.name}", handler it
 app.listen 3000
