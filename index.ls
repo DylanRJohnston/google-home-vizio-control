@@ -1,27 +1,41 @@
 require! {
   'vizio-smart-cast': SmartCast
+  'body-parser': bodyParser
+  crypto: { timingSafeEqual }
+  util: { inspect }
   express
   co
-  util: { inspect }
   dotenv
 }
 
 dotenv.config!
 
 app = express!
-tv = new SmartCast process.env.TV_PI_ADDRESS, process.env.SMART_CAST_TOKEN
+app.use bodyParser.text!
 
+tv = new SmartCast process.env.TV_PI_ADDRESS, process.env.SMART_CAST_TOKEN
+secret = Buffer.from process.env.SECRET_INPUT
+
+secretEqual = ->
+  try
+    timingSafeEqual secret, Buffer.from it
+  catch
+    false
 
 wait = (amount) ->
   resolve <-! new Promise _
-  setTimeout (-> resolve!), amount
+  setTimeout resolve, amount
 
 
-get = (url, f) ->
-  req, res <- app.get url
+post = (url, f) ->
+  req, res <- app.post url
 
-  co f req, res
-    .catch console.error
+  if secretEqual req.body
+     co f res
+      .catch console.error
+  else
+    console.error "Called with incorrect secret #{req.body}" 
+    res.status 403 .send ""
 
 
 getCurrentInputName = -> tv.input.current!.then (.ITEMS[0].VALUE)
@@ -33,25 +47,27 @@ powerOn = co.wrap ->*
   yield turnTheTvOn! if yield isTheTVOff!
 
 changeInput = co.wrap (name) ->*
-  yield tv.input.set name
+  console.log "Changing input to: #{name}"
   until name == yield getCurrentInputName!
+    console.log "Input change loop: #{name}"
+    yield tv.input.set name
     yield wait 1000
+  console.log "Done changing to: #{name}"
   
 triggerCEC = co.wrap (name) ->*
   yield changeInput 'CAST'
-  yield wait 1000
   yield changeInput name
 
-
-get '/playstation', (_, res) ->*
+post '/playstation', ->*
+  console.log "Turning on playstation"
   yield powerOn!
   yield triggerCEC process.env.PLAYSTATION_INPUT
-  res.status 200 .send ""
+  it.status 200 .send ""
 
-get '/switch', (_, res) ->*
+post '/switch', ->*
+  console.log "Turning on switch"
   yield powerOn!
   yield triggerCEC process.env.SWITCH_INPUT
-  res.status 200 .send!
-
+  it.status 200 .send ""
 
 app.listen 3000
